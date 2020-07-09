@@ -2317,28 +2317,48 @@ int CServer::Run()
 	// start server
 	NETADDR BindAddr;
 	int NetType = g_Config.m_SvIpv4Only ? NETTYPE_IPV4 : NETTYPE_ALL;
+	int Port = (g_Config.m_SvPort == 0) ? 8303 : g_Config.m_SvPort;
 
 	if(g_Config.m_Bindaddr[0] && net_host_lookup(g_Config.m_Bindaddr, &BindAddr, NetType) == 0)
 	{
 		// sweet!
 		BindAddr.type = NetType;
-		BindAddr.port = g_Config.m_SvPort;
+		BindAddr.port = Port;
 	}
 	else
 	{
 		mem_zero(&BindAddr, sizeof(BindAddr));
 		BindAddr.type = NetType;
-		BindAddr.port = g_Config.m_SvPort;
+		BindAddr.port = Port;
 	}
 
 #if defined(CONF_UPNP)
 	m_UPnP.Open(BindAddr);
 #endif
 
-	if(!m_NetServer.Open(BindAddr, &m_ServerBan, g_Config.m_SvMaxClients, g_Config.m_SvMaxClientsPerIP, 0))
+	if(g_Config.m_SvPort != 0)
 	{
-		dbg_msg("server", "couldn't open socket. port %d might already be in use", g_Config.m_SvPort);
-		return -1;
+		if(!m_NetServer.Open(BindAddr, &m_ServerBan, g_Config.m_SvMaxClients, g_Config.m_SvMaxClientsPerIP, 0))
+		{
+			dbg_msg("server", "couldn't open socket. port %d might already be in use", g_Config.m_SvPort);
+			return -1;
+		}
+	}
+	else
+	{
+		while(!m_NetServer.Open(BindAddr, &m_ServerBan, g_Config.m_SvMaxClients, g_Config.m_SvMaxClientsPerIP, 0))
+		{
+			if(BindAddr.port < 8310)
+			{
+				dbg_msg("server", "couldn't open socket. port %d might already be in use. checking for next port.", BindAddr.port);
+				BindAddr.port++;
+			}
+			else
+			{
+				dbg_msg("server", "couldn't open socket. port %d might already be in use", BindAddr.port);
+				return -1;
+			}
+		}
 	}
 
 	m_NetServer.SetCallbacks(NewClientCallback, NewClientNoAuthCallback, ClientRejoinCallback, DelClientCallback, this);
