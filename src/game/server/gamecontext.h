@@ -59,6 +59,17 @@ class IEngine;
 class IStorage;
 struct CAntibotData;
 struct CScoreRandomMapResult;
+struct CInfoBoard
+{
+	enum
+	{
+		MAX_INFOBOARD_LINES = 9,
+		MAX_INFOBOARD_STR_LEN = 17,
+	};
+
+	char m_Title[MAX_INFOBOARD_STR_LEN];
+	char m_Lines[MAX_INFOBOARD_LINES][MAX_INFOBOARD_STR_LEN];
+};
 
 class CGameContext : public IGameServer
 {
@@ -273,6 +284,8 @@ public:
 	// Checks if player can vote and notify them about the reason
 	bool RateLimitPlayerVote(int ClientID);
 	bool RateLimitPlayerMapVote(int ClientID);
+
+	void UpdateInfoBoard(int ClientID, CInfoBoard *pInfo);
 
 	std::shared_ptr<CScoreRandomMapResult> m_SqlRandomMapResult;
 

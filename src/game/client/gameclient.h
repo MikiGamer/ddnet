@@ -415,6 +415,19 @@ public:
 	class CGhost *m_pGhost;
 	class CTeamsCore m_Teams;
 
+	bool m_ShowInfoBoard[2];
+	struct
+	{
+		enum
+		{
+			MAX_INFOBOARD_LINES = 9,
+			MAX_INFOBOARD_STR_LEN = 17,
+		};
+
+		char m_Title[2][MAX_INFOBOARD_STR_LEN];
+		char m_Line[2][MAX_INFOBOARD_LINES][MAX_INFOBOARD_STR_LEN];
+	} m_InfoBoard;
+
 	int IntersectCharacter(vec2 Pos0, vec2 Pos1, vec2& NewPos, int ownID);
 
 	virtual int GetLastRaceTick();

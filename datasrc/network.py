@@ -435,4 +435,11 @@ Messages = [
 	NetMessageEx("Cl_ShowOthers", "showothers@netmsg.ddnet.tw", [
 		NetIntRange("m_Show", 0, 2),
 	]),
+
+	NetMessageEx("Sv_InfoBoard", "infoboard@netmsg.ddnet.tw", [
+		NetStringStrict("m_Title"), 
+		NetStringStrict("m_Line1"), NetStringStrict("m_Line2"), NetStringStrict("m_Line3"),
+		NetStringStrict("m_Line4"),	NetStringStrict("m_Line5"),	NetStringStrict("m_Line6"),
+		NetStringStrict("m_Line7"),	NetStringStrict("m_Line8"),	NetStringStrict("m_Line9"),
+	]),
 ]

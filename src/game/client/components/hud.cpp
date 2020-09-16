@@ -762,6 +762,62 @@ void CHud::RenderLocalTime(float x)
 	TextRender()->Text(0, x-25.0f, (12.5f - 5.f) / 2.f, 5.0f, aTimeStr, -1.0f);
 }
 
+void CHud::RenderInfoBoard(float x, float y)
+{
+	if(!m_pClient->m_ShowInfoBoard[g_Config.m_ClDummy])
+		return;
+
+	float padding = 6.0f;
+
+	float Box_Size_W = 0;
+	for(int i = 1; i < 9; i++)
+	{
+		float w = TextRender()->TextWidth(0, 8.0f, m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][i], -1, -1.0f);
+		if(w > Box_Size_W)
+			Box_Size_W = w;
+	}
+	if(TextRender()->TextWidth(0, 7.0f, m_pClient->m_InfoBoard.m_Title[g_Config.m_ClDummy], -1, -1) > Box_Size_W)
+		Box_Size_W = TextRender()->TextWidth(0, 7.0f, m_pClient->m_InfoBoard.m_Title[g_Config.m_ClDummy], -1, -1);
+
+	Box_Size_W += padding;
+	float Box_Size_H = 100.0f;
+	vec2 Box_Center(x - Box_Size_W - 3.0f, y - (Box_Size_H / 2));
+	float Box_Text_Y = Box_Center.y + 2.0f;
+
+	//draw the box
+	Graphics()->BlendNormal();
+	Graphics()->TextureClear();
+	Graphics()->QuadsBegin();
+	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+	RenderTools()->DrawRoundRect(Box_Center.x, Box_Center.y, Box_Size_W, Box_Size_H, 3.75f);
+	Graphics()->QuadsEnd();
+
+	//draw the title box
+	Graphics()->BlendNormal();
+	Graphics()->TextureClear();
+	Graphics()->QuadsBegin();
+	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.4f);
+	RenderTools()->DrawRoundRectExt(Box_Center.x, Box_Center.y, Box_Size_W, (Box_Size_H - 90.0f), 3.75f, CUI::CORNER_T);
+	Graphics()->QuadsEnd();
+
+	//draw the title text
+	float TitleX = Box_Center.x + ((Box_Size_W / 2) 
+		- (TextRender()->TextWidth(0, 7.0f, m_pClient->m_InfoBoard.m_Title[g_Config.m_ClDummy], -1, -1) / 2)
+		- (padding / 4));
+	TextRender()->TextColor(ColorRGBA(255, 255, 255));
+	TextRender()->Text(0, TitleX, Box_Text_Y, 7.0f, m_pClient->m_InfoBoard.m_Title[g_Config.m_ClDummy], -1.0f);
+
+	int LineGap = 10;
+
+	for(int i = 0; i < 9; i++)
+	{
+		//draw the line text
+		TextRender()->TextColor(ColorRGBA(255, 255, 255));
+		TextRender()->Text(0, Box_Center.x, Box_Text_Y + LineGap, 8.0f, m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][i], -1.0f);
+		LineGap += 10;
+	}
+}
+
 void CHud::OnRender()
 {
 	if(!m_pClient->m_Snap.m_pGameInfoObj)
@@ -798,6 +854,7 @@ void CHud::OnRender()
 		RenderWarmupTimer();
 		RenderTextInfo();
 		RenderLocalTime((m_Width/7)*3);
+		RenderInfoBoard(m_Width, (m_Height / 2));
 		if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 			RenderConnectionWarning();
 		RenderTeambalanceWarning();
@@ -875,6 +932,24 @@ void CHud::OnMessage(int MsgType, void *pRawMsg)
 			m_ServerRecord = (float)pMsg->m_ServerTimeBest/100;
 			m_PlayerRecord[g_Config.m_ClDummy] = (float)pMsg->m_PlayerTimeBest/100;
 		}
+	}
+	else if(MsgType == NETMSGTYPE_SV_INFOBOARD)
+	{
+		CNetMsg_Sv_InfoBoard *pMsg = (CNetMsg_Sv_InfoBoard *)pRawMsg;
+
+		if(!m_pClient->m_ShowInfoBoard[g_Config.m_ClDummy])
+			m_pClient->m_ShowInfoBoard[g_Config.m_ClDummy] = true;
+
+		memcpy(m_pClient->m_InfoBoard.m_Title[g_Config.m_ClDummy], pMsg->m_Title, sizeof(m_pClient->m_InfoBoard.m_Title[g_Config.m_ClDummy]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][0], pMsg->m_Line1, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][0]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][1], pMsg->m_Line2, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][1]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][2], pMsg->m_Line3, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][2]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][3], pMsg->m_Line4, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][3]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][4], pMsg->m_Line5, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][4]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][5], pMsg->m_Line6, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][5]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][6], pMsg->m_Line7, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][6]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][7], pMsg->m_Line8, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][7]));
+		memcpy(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][8], pMsg->m_Line9, sizeof(m_pClient->m_InfoBoard.m_Line[g_Config.m_ClDummy][8]));
 	}
 }
 

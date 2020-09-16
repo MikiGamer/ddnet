@@ -1287,6 +1287,32 @@ void CGameContext::OnClientEnter(int ClientID)
 		NewClientInfoMsg.m_Local = 1;
 		Server()->SendPackMsg(&NewClientInfoMsg, MSGFLAG_VITAL|MSGFLAG_NORECORD, ClientID);
 	}
+
+	// infoboard 
+	CInfoBoard InfoBoard;
+	char aBuf[InfoBoard.MAX_INFOBOARD_LINES][InfoBoard.MAX_INFOBOARD_STR_LEN];
+	
+	//title
+	str_format(aBuf[0], sizeof(aBuf[0]), "Welcome to DDNet");
+	memcpy(InfoBoard.m_Title, aBuf[0], sizeof(InfoBoard.m_Title));
+
+	//lines
+	str_format(aBuf[0], sizeof(aBuf[0]), "Player: %s", Server()->ClientName(ClientID));
+	str_format(aBuf[1], sizeof(aBuf[1]), "");
+	str_format(aBuf[2], sizeof(aBuf[2]), "");
+	str_format(aBuf[3], sizeof(aBuf[3]), "");
+	str_format(aBuf[4], sizeof(aBuf[4]), "");
+	str_format(aBuf[5], sizeof(aBuf[5]), "");
+	str_format(aBuf[6], sizeof(aBuf[6]), "");
+	str_format(aBuf[7], sizeof(aBuf[7]), "");
+	str_format(aBuf[8], sizeof(aBuf[8]), "www.ddnet.tw");
+
+	for(int i = 0; i < InfoBoard.MAX_INFOBOARD_LINES; i++)
+	{
+		memcpy(InfoBoard.m_Lines[i], aBuf[i], sizeof(InfoBoard.m_Lines[i]));
+	}
+
+	UpdateInfoBoard(ClientID, &InfoBoard);
 }
 
 void CGameContext::OnClientConnected(int ClientID)
@@ -4017,4 +4043,25 @@ bool CGameContext::RateLimitPlayerMapVote(int ClientID)
 		return true;
 	}
 	return false;
+}
+
+void CGameContext::UpdateInfoBoard(int ClientID, CInfoBoard *pInfo)
+{
+	if(!Server()->IsSixup(ClientID))
+	{
+		CNetMsg_Sv_InfoBoard Msg;
+
+		Msg.m_Title = pInfo->m_Title;
+		Msg.m_Line1 = pInfo->m_Lines[0];
+		Msg.m_Line2 = pInfo->m_Lines[1];
+		Msg.m_Line3 = pInfo->m_Lines[2];
+		Msg.m_Line4 = pInfo->m_Lines[3];
+		Msg.m_Line5 = pInfo->m_Lines[4];
+		Msg.m_Line6 = pInfo->m_Lines[5];
+		Msg.m_Line7 = pInfo->m_Lines[6];
+		Msg.m_Line8 = pInfo->m_Lines[7];
+		Msg.m_Line9 = pInfo->m_Lines[8];
+
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientID);
+	}
 }

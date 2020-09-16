@@ -536,6 +536,16 @@ void CGameClient::OnReset()
 	m_ShowOthers[1] = -1;
 
 	m_ReceivedDDNetPlayer = false;
+
+	m_ShowInfoBoard[0] = false;
+	m_ShowInfoBoard[1] = false;
+
+	//infoboard reset
+	mem_zero(m_InfoBoard.m_Title, sizeof(m_InfoBoard.m_Title));
+	for(int i = 0; i < m_InfoBoard.MAX_INFOBOARD_LINES; i++)
+	{
+		mem_zero(m_InfoBoard.m_Line[i], sizeof(m_InfoBoard.m_Line[i]));
+	}
 }
 
 
